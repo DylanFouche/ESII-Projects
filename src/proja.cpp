@@ -3,24 +3,62 @@
 
 using namespace std;
 
+void cleanupGPIO(int dum) {
+	pinMode(RESET_BTN, INPUT);
+    pinMode(ALARM_DISMISS_BTN, INPUT);
+    pinMode(INTERVAL_ADJUST_BTN, INPUT);
+    pinMode(START_STOP_BTN, INPUT);
+    pinMode(ALARM_LED, INPUT);
+	exit(1);
+}
+
 /*
  * main function
  */
 int main()
 {
+    signal(SIGINT, cleanupGPIO);
+
     setup_gpio();
     setup_dac();
     //TODO:
     //setup adc
     //setup rtc
     //setup blynk
+
+	pthread_attr_t tattr;
+	pthread_t thread_id;
+	int newprio = 99;
+	sched_param param;
+
+	pthread_attr_init (&tattr);
+	pthread_attr_getschedparam (&tattr, &param); /* safe to get existing scheduling param */
+	param.sched_priority = newprio; /* set the priority; others are unchanged */
+	pthread_attr_setschedparam (&tattr, &param); /* setting the new scheduling param */
+	pthread_create(&thread_id, &tattr, adc_read_thread, (void *)1); /* with new priority specified */
+	
     while(true){
         //TODO:
         //read in from adc
         //do some computation
+        float v_out = (light / (float)1023) * temp;
+
+        if (v_out < MIN_THRESH || v_out > MAX_THRESH)
+            activate_alarm();
         //write out to dac
+
+        //Write to console
+        printf("%f C | %d | %f V\n", temp, light, v_out);
         //publish data to blynk
+
+        delay(1000);
     }
+
+    //Join and exit the reading thread
+	pthread_join(thread_id, NULL);
+    pthread_exit(NULL);
+
+    return 0;
 }
 
 /*
@@ -79,6 +117,7 @@ void alarm_dismiss_isr(void){
     long interrupt_time = millis();
     if(interrupt_time - last_interrupt_b > DEBOUNCE_TIME){
         cout << "Alarm dismiss button pressed" << endl;
+        deactivate_alarm();
     }
     last_interrupt_b = interrupt_time;
 }

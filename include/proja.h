@@ -13,6 +13,8 @@
 #include <math.h>
 #include <pthread.h>
 #include <iostream>
+#include <pthread.h>
+#include <signal.h> // For cleaning up GPIO
 
 //setting up BLYNK
 #define BLYNK_PRINT stdout
@@ -40,10 +42,14 @@ BlynkSocket Blynk(_blynkTransport);
 #define ADC_SPI_CHAN 1
 #define TEMP_CHAN 0
 #define LIGHT_CHAN 1
-#define POT_CHAN 2
+#define DAC_CHAN 3
 
 //Debounce time
 #define DEBOUNCE_TIME 200
+
+//Alarm thresholds
+#define MIN_THRESH 0.65
+#define MAX_THRESH 2.65
 
 //Function definitions
 void setup_gpio(void);
@@ -69,6 +75,6 @@ int light;
 float dac_out;
 
 //Flag used by ADC reading thread
-bool stopped = true;
+bool stopped = false;
 
 #endif
