@@ -48,6 +48,9 @@ BlynkSocket Blynk(_blynkTransport);
 //Function definitions
 void setup_gpio(void);
 void setup_dac(void);
+int read_adc_channel(int channel);
+float get_degrees_celsius(int data);
+void *adc_read_thread(void *threadargs);
 void activate_alarm(void);
 void deactivate_alarm(void);
 void write_to_dac(char Vout);
@@ -58,5 +61,14 @@ long last_interrupt_a = 0;
 long last_interrupt_b = 0;
 long last_interrupt_c = 0;
 long last_interrupt_d = 0;
+
+//ADC readings
+float humid;
+float temp;
+int light;
+float dac_out;
+
+//Flag used by ADC reading thread
+bool stopped = true;
 
 #endif

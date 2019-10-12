@@ -15,11 +15,11 @@ int main()
     //setup rtc
     //setup blynk
     while(true){
-      //TODO:
-      //read in from adc
-      //do some computation
-      //write out to dac
-      //publish data to blynk
+        //TODO:
+        //read in from adc
+        //do some computation
+        //write out to dac
+        //publish data to blynk
     }
 }
 
@@ -28,18 +28,42 @@ int main()
  */
 void write_to_dac(char Vout)
 {
-  char reg[2];
-  reg[0] = 0b01010000 | (Vout>>4);
-  reg[1] = Vout<<4;
-  wiringPiSPIDataRW(DAC_SPI_CHAN, (unsigned char*)reg, 2);
+    char reg[2];
+    reg[0] = 0b01010000 | (Vout>>4);
+    reg[1] = Vout<<4;
+    wiringPiSPIDataRW(DAC_SPI_CHAN, (unsigned char*)reg, 2);
+}
+int read_adc_channel(int channel)
+{
+    char reg[3];
+    reg[0] = 1;
+    reg[1] = (8 + channel) << 4;
+    reg[2] = 0;
+    wiringPiSPIDataRW(ADC_SPI_CHAN, (unsigned char*)reg, 3);
+    return ((reg[1]&3) << 8) + reg[2];
+}
+float get_degrees_celsius(int data)
+{
+    float v_out = (data * 330) / (float)1023;
+    return v_out - 50;
+}
+void *adc_read_thread(void *threadargs)
+{
+    while (!stopped)
+	{
+		temp = get_degrees_celsius(read_adc_channel(TEMP_CHAN));
+		light = read_adc_channel(LIGHT_CHAN);
+	}
+
+    pthread_exit(NULL);
 }
 void activate_alarm(void)
 {
-  digitalWrite(ALARM_LED,1);
+    digitalWrite(ALARM_LED,1);
 }
 void deactivate_alarm(void)
 {
-  digitalWrite(ALARM_LED,0);
+    digitalWrite(ALARM_LED,0);
 }
 /*
  * Interrupt handlers
@@ -99,7 +123,7 @@ void setup_gpio(void)
 
 void setup_dac(void)
 {
-  //set up the SPI interface
-  wiringPiSPISetup(DAC_SPI_CHAN, SPI_SPEED);
-  wiringPiSPISetup(ADC_SPI_CHAN, SPI_SPEED);
+    //set up the SPI interface
+    wiringPiSPISetup(DAC_SPI_CHAN, SPI_SPEED);
+    wiringPiSPISetup(ADC_SPI_CHAN, SPI_SPEED);
 }
