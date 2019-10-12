@@ -31,7 +31,7 @@ void write_to_dac(char Vout)
   char reg[2];
   reg[0] = 0b01010000 | (Vout>>4);
   reg[1] = Vout<<4;
-  wiringPiSPIDataRW(SPI_CHAN, (unsigned char*)reg, 2);
+  wiringPiSPIDataRW(DAC_SPI_CHAN, (unsigned char*)reg, 2);
 }
 void activate_alarm(void)
 {
@@ -100,5 +100,6 @@ void setup_gpio(void)
 void setup_dac(void)
 {
   //set up the SPI interface
-  wiringPiSPISetup (SPI_CHAN, SPI_SPEED);
+  wiringPiSPISetup(DAC_SPI_CHAN, SPI_SPEED);
+  wiringPiSPISetup(ADC_SPI_CHAN, SPI_SPEED);
 }

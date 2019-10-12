@@ -22,8 +22,12 @@
 #define START_STOP_BTN 7
 
 //SPI Settings
-#define SPI_CHAN 0
 #define SPI_SPEED 204800
+#define DAC_SPI_CHAN 0
+#define ADC_SPI_CHAN 1
+#define TEMP_CHAN 0
+#define LIGHT_CHAN 1
+#define POT_CHAN 2
 
 //Debounce time
 #define DEBOUNCE_TIME 200
