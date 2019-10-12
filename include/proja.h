@@ -14,6 +14,19 @@
 #include <pthread.h>
 #include <iostream>
 
+//setting up BLYNK
+#define BLYNK_PRINT stdout
+
+#include <BlynkApiWiringPi.h>
+#include <BlynkSocket.h>
+#include <BlynkOptionsParser.h>
+
+static BlynkTransportSocket _blynkTransport;
+BlynkSocket Blynk(_blynkTransport);
+#include <BlynkWidgets.h>
+//BlynkTimer timer;
+
+
 //Define buttons and leds
 #define ALARM_LED 1
 #define RESET_BTN 2
