@@ -11,6 +11,8 @@ TESTDIR = test
 BUILDDIR = build
 BINDIR = bin
 
+BLYNK-BINARIES = blynk-library/src/utility/BlynkDebug.o blynk-library/src/utility/BlynkHandlers.o blynk-library/src/utility/BlynkTimer.o
+
 #the name of the file where we have our main method
 DRIVER = proja
 #the name of our target executable
@@ -22,7 +24,7 @@ TESTOBJECTS = $(filter-out $(BUILDDIR)/$(DRIVER).o,$(OBJECTS))
 
 #rule for linking
 $(EXE): $(OBJECTS)
-	$(CC)  $^ $(FLAGS) -o $(BINDIR)/$(EXE)
+	$(CC)  $^ $(BLYNK-BINARIES) $(FLAGS) -o $(BINDIR)/$(EXE)
 
 #rule for compiling
 $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
