@@ -36,6 +36,9 @@ BlynkSocket Blynk(_blynkTransport);
 #define INTERVAL_ADJUST_BTN 0
 #define START_STOP_BTN 7
 
+//Debounce time
+#define DEBOUNCE_TIME 200
+
 //SPI Settings
 #define SPI_SPEED 204800
 #define DAC_SPI_CHAN 0
@@ -44,10 +47,8 @@ BlynkSocket Blynk(_blynkTransport);
 #define LIGHT_CHAN 1
 #define DAC_CHAN 3
 
-//Debounce time
-#define DEBOUNCE_TIME 200
-
-//Alarm thresholds
+//Alarm variables
+#define ALARM_INTERVAL 3000
 #define MIN_THRESH 0.65
 #define MAX_THRESH 2.65
 
@@ -67,6 +68,8 @@ long last_interrupt_a = 0;
 long last_interrupt_b = 0;
 long last_interrupt_c = 0;
 long last_interrupt_d = 0;
+
+long last_alarm = 0;
 
 //ADC readings
 float humid;

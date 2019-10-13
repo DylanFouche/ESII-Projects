@@ -97,7 +97,11 @@ void *adc_read_thread(void *threadargs)
 }
 void activate_alarm(void)
 {
-    digitalWrite(ALARM_LED,1);
+    long alarm = millis();
+    if (alarm - last_alarm > ALARM_INTERVAL || last_alarm == 0){
+        digitalWrite(ALARM_LED,1);
+        last_alarm = alarm;
+    }
 }
 void deactivate_alarm(void)
 {
