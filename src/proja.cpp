@@ -46,7 +46,8 @@ int main()
         printf("%.2f V | %.2f C | %d | %.2f V\n", humid, temp, light, v_out);
 
         //publish data to blynk
-        write_to_blynk();
+        Blynk.run();
+	write_to_blynk();
 
         //wait a second
         delay(1000);
