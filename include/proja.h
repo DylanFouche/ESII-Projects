@@ -3,8 +3,6 @@
 #define _PROJ_A_H
 
 //Includes
-#include "clock.h"
-
 #include <wiringPi.h>
 #include <wiringPiSPI.h>
 #include <softPwm.h>
@@ -18,25 +16,8 @@
 #include <iostream>
 #include <signal.h> // For cleaning up GPIO
 
-//setting up BLYNK
-#define BLYNK_PRINT stdout
-
-#include <BlynkApiWiringPi.h>
-#include <BlynkSocket.h>
-#include <BlynkOptionsParser.h>
-
-static BlynkTransportSocket _blynkTransport;
-BlynkSocket Blynk(_blynkTransport);
-#include <BlynkWidgets.h>
-
-char AUTH_TOKEN[] = "pZn612Bmfqu9_3344QW0NE6sAWEkkj94";
-
-//define BLYNK virtual pins
-#define SYSTEM_TIME V1
-#define HUMIDITY V2
-#define TEMP V3
-#define LIGHT V4
-#define ALARM V5
+#include "clock.h"
+#include "blynk.h"
 
 //Define buttons and leds
 #define ALARM_LED 1
@@ -73,8 +54,11 @@ void activate_alarm(void);
 void deactivate_alarm(void);
 void write_to_dac(char Vout);
 void write_to_blynk(void);
+void update_blynk_time(void);
 int main(void);
-// int hexCompensation(int units);
+
+// Delay between readings displayed
+int delay_i = 0, delay_times[3] = {1000, 2000, 5000};
 
 //global variables for debouncing
 long last_interrupt_a = 0;
@@ -90,7 +74,6 @@ float temp;
 int light;
 float dac_out;
 bool alarm_on = false;
-char system_time[8];
 
 //Flag used by ADC reading thread
 bool stopped = false;

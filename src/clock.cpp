@@ -1,5 +1,20 @@
 #include "clock.h"
 
+#include <time.h>
+#include <wiringPiI2C.h>
+
+// define constants
+int RTC;
+const char RTCAddr = 0x6f;
+const char SEC = 0x00; // see register table in datasheet
+const char MIN = 0x01;
+const char HOUR = 0x02;
+
+void setup_RTC(void)
+{
+	RTC = wiringPiI2CSetup(RTCAddr); //Set up the RTC
+}
+
 void start_sys_timer(void)
 {
     int hours = 0;
@@ -13,7 +28,7 @@ void start_sys_timer(void)
     wiringPiI2CWriteReg8(RTC, SEC, 0b10000000+secs);
 }
 
-void get_current_time(int & HH, int & MM, int && SS)
+void get_current_time(int & HH, int & MM, int & SS)
 {
     time_t rawtime;
     struct tm * timeinfo;
@@ -22,6 +37,22 @@ void get_current_time(int & HH, int & MM, int && SS)
     HH = timeinfo ->tm_hour;
     MM = timeinfo ->tm_min;
     SS = timeinfo ->tm_sec;
+}
+
+void get_sys_time(int & hh, int & mm, int & ss)
+{
+    //get hours
+    int hoursHex = wiringPiI2CReadReg8(RTC, HOUR);
+    hh = hexCompensation(hoursHex);
+
+    //get mins
+    int minsHex = wiringPiI2CReadReg8(RTC, MIN);
+    mm = hexCompensation(minsHex);
+
+    //get secs
+    int secsHex = wiringPiI2CReadReg8(RTC, SEC);
+    secsHex -= 0x80;	// get rid of bit
+    ss = hexCompensation(secsHex);
 }
 
 int hexCompensation(int units){

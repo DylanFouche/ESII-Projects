@@ -1,18 +1,11 @@
-#ifndef CLOCK_H
-#define CLOCK_H
+#ifndef _PROJ_A_CLOCK_H
+#define _PROJ_A_CLOCK_H
 
-#include <time.h>
-#include <wiringPiI2C.h>
-
+void setup_RTC(void);
 void start_sys_timer(void);
-void get_current_time(int & HH, int & MM, int && SS);
+void get_current_time(int & HH, int & MM, int & SS);
+void get_sys_time(int & hh, int & mm, int & ss);
 int hexCompensation(int units);
 int decCompensation(int units);
-
-// define constants
-const char RTCAddr = 0x6f;
-const char SEC = 0x00; // see register table in datasheet
-const char MIN = 0x01;
-const char HOUR = 0x02;
 
 #endif

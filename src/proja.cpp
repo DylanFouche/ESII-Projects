@@ -1,4 +1,3 @@
-
 #include "proja.h"
 
 using namespace std;
@@ -20,12 +19,15 @@ void cleanupGPIO(int dum) {
  */
 int main()
 {
-    signal(SIGINT, cleanupGPIO);
+    signal(SIGINT, cleanupGPIO); //Exit on Control-C
+
     //set up WiringPi
     setup_gpio();
     setup_dac_adc();
+
     //set up Blynk
-    Blynk.begin(AUTH_TOKEN);
+    setup_blynk();
+
     //set up pthread for adc
     pthread_attr_t tattr;
     pthread_t thread_id;
@@ -37,9 +39,9 @@ int main()
     pthread_attr_setschedparam (&tattr, &param); /* setting the new scheduling param */
     pthread_create(&thread_id, &tattr, adc_read_thread, (void *)1); /* with new priority specified */
 
-    start_sys_timer();
+    start_sys_timer(); //start sys timer on RTC
     
-    printf("System Time | Humidity | Temperature | Light | DAC_Vout\n");
+    printf("RTC Time | Sys Timer | Humidity | Temperature | Light | DAC_Vout\n");
 
     while(true){
         //compute Vout
@@ -53,31 +55,19 @@ int main()
 	    write_to_dac((int)v_out);
 	
         //Get current times
-        get_current_time();
-
-        //get hours
-		hoursHex = wiringPiI2CReadReg8(RTC, HOUR);
-		hours = hexCompensation(hoursHex);
-
-		//get mins
-		minsHex = wiringPiI2CReadReg8(RTC, MIN);
-		mins = hexCompensation(minsHex);
-
-		//get secs
-		secsHex = wiringPiI2CReadReg8(RTC, SEC);
-		secsHex -= 0x80;	// get rid of bit
-		secs = hexCompensation(secsHex);
+        get_current_time(HH, MM, SS);
+        get_sys_time(hh, mm, ss);
+        update_blynk_time(HH, MM, SS);
 
         //Write to console
         printf("%d:%d:%d | %d:%d:%d | ", HH, MM, SS, hh, mm, ss);
         printf("%.2f V | %.2f C | %d | %.2f V\n", humid, temp, light, v_out);
 
         //publish data to blynk
-        Blynk.run();
-	    write_to_blynk();
+	    //write_to_blynk(humid, temp, light, alarm_on);
 
-        //wait a second
-        delay(1000);
+        //wait specified time
+        delay(delay_times[delay_i]);
     }
 
     //Join and exit the reading thread
@@ -90,14 +80,8 @@ int main()
 /*
  * Utility functions
  */
-void write_to_blynk(void)
-{
-    Blynk.virtualWrite(SYSTEM_TIME, system_time);
-    Blynk.virtualWrite(HUMIDITY, humid);
-    Blynk.virtualWrite(TEMP, temp);
-    Blynk.virtualWrite(LIGHT, light);
-    Blynk.virtualWrite(ALARM, alarm_on);
-}
+
+// Write data to DAC
 void write_to_dac(char Vout)
 {
     char reg[2];
@@ -105,6 +89,8 @@ void write_to_dac(char Vout)
     reg[1] = Vout<<4;
     wiringPiSPIDataRW(DAC_SPI_CHAN, (unsigned char*)reg, 2);
 }
+
+// Read data from channel of ADC
 int read_adc_channel(int channel)
 {
     char reg[3];
@@ -114,6 +100,8 @@ int read_adc_channel(int channel)
     wiringPiSPIDataRW(ADC_SPI_CHAN, (unsigned char*)reg, 3);
     return ((reg[1]&3) << 8) + reg[2];
 }
+
+// Convert data to voltage
 float get_volts(int data)
 {
     return (data * 3.3) / (float)1023;
@@ -140,28 +128,14 @@ void activate_alarm(void)
     long alarm = millis();
     if (alarm - last_alarm > ALARM_INTERVAL || last_alarm == 0){
         digitalWrite(ALARM_LED,1);
+        alarm_on = true;
         last_alarm = alarm;
     }
 }
 void deactivate_alarm(void)
 {
     digitalWrite(ALARM_LED,0);
-}
-
-void update_blynk_time(void)
-{
-    //update system_time string for blynk
-    char HHstr[2];
-    char MMstr[2];
-    char SSstr[2];
-    sprintf(HHstr, "%d", HH);
-    sprintf(MMstr, "%d", MM);
-    sprintf(SSstr, "%d", SS);
-    strcpy(system_time, HHstr);
-    strcat(system_time,":");
-    strcat(system_time, MMstr);
-    strcat(system_time,":");
-    strcat(system_time, SSstr);
+    alarm_on = false;
 }
 
 /*
@@ -171,8 +145,10 @@ void reset_isr(void){
     long interrupt_time = millis();
     if(interrupt_time - last_interrupt_a > DEBOUNCE_TIME){
         cout << "Reset button pressed" << endl;
+        last_alarm = 0;
         system("clear");
         printf("RTC Time | Sys Timer | Humidity | Temperature | Light | DAC_Vout\n");
+        start_sys_timer();
     }
     last_interrupt_a = interrupt_time;
 }
@@ -188,6 +164,7 @@ void interval_adjust_isr(void){
     long interrupt_time = millis();
     if(interrupt_time - last_interrupt_c > DEBOUNCE_TIME){
         cout << "Interval adjust button pressed" << endl;
+        delay_i++;
     }
     last_interrupt_c = interrupt_time;
 }
@@ -206,6 +183,8 @@ void setup_gpio(void)
 {
     //set up wiring Pi
     wiringPiSetup();
+    setup_RTC();
+
     //set up the buttons
     pinMode(RESET_BTN, INPUT);
     pinMode(ALARM_DISMISS_BTN, INPUT);
