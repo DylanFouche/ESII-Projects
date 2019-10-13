@@ -6,6 +6,7 @@
 #include <wiringPi.h>
 #include <wiringPiSPI.h>
 #include <softPwm.h>
+#include <string>
 #include <vector>
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,8 +28,15 @@
 static BlynkTransportSocket _blynkTransport;
 BlynkSocket Blynk(_blynkTransport);
 #include <BlynkWidgets.h>
-//BlynkTimer timer;
 
+char AUTH_TOKEN[] = "pZn612Bmfqu9_3344QW0NE6sAWEkkj94";
+
+//define BLYNK virtual pins
+#define SYSTEM_TIME V1
+#define HUMIDITY V2
+#define TEMP V3
+#define LIGHT V4
+#define ALARM V5
 
 //Define buttons and leds
 #define ALARM_LED 1
@@ -56,13 +64,15 @@ BlynkSocket Blynk(_blynkTransport);
 
 //Function definitions
 void setup_gpio(void);
-void setup_dac(void);
+void cleanupGPIO(int dum);
+void setup_dac_adc(void);
 int read_adc_channel(int channel);
 float get_degrees_celsius(int data);
 void *adc_read_thread(void *threadargs);
 void activate_alarm(void);
 void deactivate_alarm(void);
 void write_to_dac(char Vout);
+void write_to_blynk(void);
 void get_current_time(void);
 int main(void);
 
@@ -80,6 +90,7 @@ float temp;
 int light;
 float dac_out;
 bool alarm_on = false;
+char system_time[8];
 
 //Flag used by ADC reading thread
 bool stopped = false;
