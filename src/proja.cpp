@@ -4,12 +4,15 @@
 using namespace std;
 
 void cleanupGPIO(int dum) {
+    reading = false;
+    stopped = true;
+
 	pinMode(RESET_BTN, INPUT);
     pinMode(ALARM_DISMISS_BTN, INPUT);
     pinMode(INTERVAL_ADJUST_BTN, INPUT);
     pinMode(START_STOP_BTN, INPUT);
     pinMode(ALARM_LED, INPUT);
-	exit(1);
+	exit(0);
 }
 
 /*
@@ -36,8 +39,17 @@ int main()
 	param.sched_priority = newprio; /* set the priority; others are unchanged */
 	pthread_attr_setschedparam (&tattr, &param); /* setting the new scheduling param */
 	pthread_create(&thread_id, &tattr, adc_read_thread, (void *)1); /* with new priority specified */
+
+    get_current_time();
+    hh = HH;
+    mm = MM;
+    ss = SS;
 	
-	printf("System Time | Humidity | Temperature | Light | DAC_Vout\n");
+	printf("RTC Time | Sys Timer | Humidity | Temperature | Light | DAC_Vout\n");
+
+    // int hours, mins, secs;
+    // int secsHex, minsHex, hoursHex;
+    // int RTC = wiringPiI2CSetup(RTCAddr); //Set up the RTC
 
     while(true){
         //TODO:
@@ -49,13 +61,26 @@ int main()
             activate_alarm();
 
         //write out to dac
-	write_to_dac((int)v_out);
+	    write_to_dac((int)v_out);
 	
-	//Get current times
-	get_current_time();
+        //Get current times
+        get_current_time();
+
+        // //get hours
+		// hoursHex = wiringPiI2CReadReg8(RTC, HOUR);
+		// hours = hexCompensation(hoursHex);
+
+		// //get mins
+		// minsHex = wiringPiI2CReadReg8(RTC, MIN);
+		// mins = hexCompensation(minsHex);
+
+		// //get secs
+		// secsHex = wiringPiI2CReadReg8(RTC, SEC);
+		// secsHex -= 0x80;	// get rid of bit
+		// secs = hexCompensation(secsHex);
 
         //Write to console
-	printf("%d:%d:%d | ", HH, MM, SS);
+        printf("%d:%d:%d | %d:%d:%d | ", HH, MM, SS, hh, mm, ss);
         printf("%.2f V | %.2f C | %d | %.2f V\n", humid, temp, light, v_out);
         //publish data to blynk
 
@@ -63,10 +88,10 @@ int main()
     }
 
     //Join and exit the reading thread
-	pthread_join(thread_id, NULL);
-    	pthread_exit(NULL);
+    pthread_join(thread_id, NULL);
+    pthread_exit(NULL);
 
-    	return 0;
+    return 0;
 }
 
 /*
@@ -100,6 +125,8 @@ void *adc_read_thread(void *threadargs)
 {
     while (!stopped)
 	{
+        while (!reading) continue;
+
 		temp = get_degrees_celsius(read_adc_channel(TEMP_CHAN));
 		light = read_adc_channel(LIGHT_CHAN);
 		humid = get_volts(read_adc_channel(HUMID_CHAN));
@@ -126,6 +153,8 @@ void reset_isr(void){
     long interrupt_time = millis();
     if(interrupt_time - last_interrupt_a > DEBOUNCE_TIME){
         cout << "Reset button pressed" << endl;
+        system("clear");
+        printf("RTC Time | Sys Timer | Humidity | Temperature | Light | DAC_Vout\n");
     }
     last_interrupt_a = interrupt_time;
 }
@@ -148,6 +177,7 @@ void start_stop_isr(void){
     long interrupt_time = millis();
     if(interrupt_time - last_interrupt_d > DEBOUNCE_TIME){
         cout << "Start/stop button pressed" << endl;
+        reading = !reading;
     }
     last_interrupt_d = interrupt_time;
 }
@@ -193,3 +223,28 @@ void setup_dac(void)
     wiringPiSPISetup(DAC_SPI_CHAN, SPI_SPEED);
     wiringPiSPISetup(ADC_SPI_CHAN, SPI_SPEED);
 }
+
+// int hexCompensation(int units){
+// 	/*Convert HEX or BCD value to DEC where 0x45 == 0d45 
+// 	  This was created as the lighXXX functions which determine what GPIO pin to set HIGH/LOW
+// 	  perform operations which work in base10 and not base16 (incorrect logic) 
+// 	*/
+// 	int unitsU = units%0x10;
+
+// 	if (units >= 0x50){
+// 		units = 50 + unitsU;
+// 	}
+// 	else if (units >= 0x40){
+// 		units = 40 + unitsU;
+// 	}
+// 	else if (units >= 0x30){
+// 		units = 30 + unitsU;
+// 	}
+// 	else if (units >= 0x20){
+// 		units = 20 + unitsU;
+// 	}
+// 	else if (units >= 0x10){
+// 		units = 10 + unitsU;
+// 	}
+// 	return units;
+// }

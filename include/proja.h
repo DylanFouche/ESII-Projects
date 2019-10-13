@@ -5,6 +5,7 @@
 //Includes
 #include <wiringPi.h>
 #include <wiringPiSPI.h>
+// #include <wiringPiI2C.h>
 #include <softPwm.h>
 #include <vector>
 #include <stdio.h>
@@ -65,6 +66,7 @@ void deactivate_alarm(void);
 void write_to_dac(char Vout);
 void get_current_time(void);
 int main(void);
+// int hexCompensation(int units);
 
 //global variables for debouncing
 long last_interrupt_a = 0;
@@ -83,8 +85,16 @@ bool alarm_on = false;
 
 //Flag used by ADC reading thread
 bool stopped = false;
+bool reading = true;
 
 //RTC
-int HH, MM, SS;
+int HH, MM, SS; //System time
+int hh, mm, ss; //Start time
+
+// // define constants
+// const char RTCAddr = 0x6f;
+// const char SEC = 0x00; // see register table in datasheet
+// const char MIN = 0x01;
+// const char HOUR = 0x02;
 
 #endif
