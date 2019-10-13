@@ -3,9 +3,10 @@
 #define _PROJ_A_H
 
 //Includes
+#include "clock.h"
+
 #include <wiringPi.h>
 #include <wiringPiSPI.h>
-// #include <wiringPiI2C.h>
 #include <softPwm.h>
 #include <string>
 #include <vector>
@@ -15,9 +16,7 @@
 #include <math.h>
 #include <pthread.h>
 #include <iostream>
-#include <pthread.h>
 #include <signal.h> // For cleaning up GPIO
-#include <time.h>
 
 //setting up BLYNK
 #define BLYNK_PRINT stdout
@@ -59,7 +58,7 @@ char AUTH_TOKEN[] = "pZn612Bmfqu9_3344QW0NE6sAWEkkj94";
 #define DAC_CHAN 3
 
 //Alarm variables
-#define ALARM_INTERVAL 3000
+#define ALARM_INTERVAL 180000
 #define MIN_THRESH 0.65
 #define MAX_THRESH 2.65
 
@@ -74,7 +73,6 @@ void activate_alarm(void);
 void deactivate_alarm(void);
 void write_to_dac(char Vout);
 void write_to_blynk(void);
-void get_current_time(void);
 int main(void);
 // int hexCompensation(int units);
 
@@ -101,11 +99,5 @@ bool reading = true;
 //RTC
 int HH, MM, SS; //System time
 int hh, mm, ss; //Start time
-
-// // define constants
-// const char RTCAddr = 0x6f;
-// const char SEC = 0x00; // see register table in datasheet
-// const char MIN = 0x01;
-// const char HOUR = 0x02;
 
 #endif

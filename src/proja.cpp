@@ -37,10 +37,7 @@ int main()
     pthread_attr_setschedparam (&tattr, &param); /* setting the new scheduling param */
     pthread_create(&thread_id, &tattr, adc_read_thread, (void *)1); /* with new priority specified */
 
-    get_current_time();
-    hh = HH;
-    mm = MM;
-    ss = SS;
+    start_sys_timer();
     
     printf("System Time | Humidity | Temperature | Light | DAC_Vout\n");
 
@@ -58,18 +55,18 @@ int main()
         //Get current times
         get_current_time();
 
-        // //get hours
-		// hoursHex = wiringPiI2CReadReg8(RTC, HOUR);
-		// hours = hexCompensation(hoursHex);
+        //get hours
+		hoursHex = wiringPiI2CReadReg8(RTC, HOUR);
+		hours = hexCompensation(hoursHex);
 
-		// //get mins
-		// minsHex = wiringPiI2CReadReg8(RTC, MIN);
-		// mins = hexCompensation(minsHex);
+		//get mins
+		minsHex = wiringPiI2CReadReg8(RTC, MIN);
+		mins = hexCompensation(minsHex);
 
-		// //get secs
-		// secsHex = wiringPiI2CReadReg8(RTC, SEC);
-		// secsHex -= 0x80;	// get rid of bit
-		// secs = hexCompensation(secsHex);
+		//get secs
+		secsHex = wiringPiI2CReadReg8(RTC, SEC);
+		secsHex -= 0x80;	// get rid of bit
+		secs = hexCompensation(secsHex);
 
         //Write to console
         printf("%d:%d:%d | %d:%d:%d | ", HH, MM, SS, hh, mm, ss);
@@ -150,15 +147,9 @@ void deactivate_alarm(void)
 {
     digitalWrite(ALARM_LED,0);
 }
-void get_current_time(void)
+
+void update_blynk_time(void)
 {
-    time_t rawtime;
-    struct tm * timeinfo;
-    time (&rawtime);
-    timeinfo = localtime(&rawtime);
-    HH = timeinfo ->tm_hour;
-    MM = timeinfo ->tm_min;
-    SS = timeinfo ->tm_sec;
     //update system_time string for blynk
     char HHstr[2];
     char MMstr[2];
@@ -239,28 +230,3 @@ void setup_dac_adc(void)
     wiringPiSPISetup(DAC_SPI_CHAN, SPI_SPEED);
     wiringPiSPISetup(ADC_SPI_CHAN, SPI_SPEED);
 }
-
-// int hexCompensation(int units){
-// 	/*Convert HEX or BCD value to DEC where 0x45 == 0d45 
-// 	  This was created as the lighXXX functions which determine what GPIO pin to set HIGH/LOW
-// 	  perform operations which work in base10 and not base16 (incorrect logic) 
-// 	*/
-// 	int unitsU = units%0x10;
-
-// 	if (units >= 0x50){
-// 		units = 50 + unitsU;
-// 	}
-// 	else if (units >= 0x40){
-// 		units = 40 + unitsU;
-// 	}
-// 	else if (units >= 0x30){
-// 		units = 30 + unitsU;
-// 	}
-// 	else if (units >= 0x20){
-// 		units = 20 + unitsU;
-// 	}
-// 	else if (units >= 0x10){
-// 		units = 10 + unitsU;
-// 	}
-// 	return units;
-// }
