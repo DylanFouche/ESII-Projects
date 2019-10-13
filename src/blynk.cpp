@@ -25,16 +25,19 @@ char system_time[8];
 void setup_blynk(void)
 {
     Blynk.begin(AUTH_TOKEN);
+    while (Blynk.connect() == false);
 }
 
-void write_to_blynk(float humid, float temp, int light, bool alarm_on)
+void write_to_blynk(float humid, int temp, int light, bool alarm_on)
 {
-    Blynk.run();
-    Blynk.virtualWrite(SYSTEM_TIME, system_time);
-    Blynk.virtualWrite(HUMIDITY, humid);
-    Blynk.virtualWrite(TEMP, temp);
-    Blynk.virtualWrite(LIGHT, light);
-    Blynk.virtualWrite(ALARM, alarm_on);
+    if (Blynk.connected()) {
+        Blynk.run();
+        Blynk.virtualWrite(SYSTEM_TIME, system_time);
+        Blynk.virtualWrite(HUMIDITY, humid);
+        Blynk.virtualWrite(TEMP, temp);
+        Blynk.virtualWrite(LIGHT, light);
+        Blynk.virtualWrite(ALARM, alarm_on);
+    }
 }
 
 void update_blynk_time(int HH, int MM, int SS)

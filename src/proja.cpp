@@ -41,7 +41,7 @@ int main()
 
     start_sys_timer(); //start sys timer on RTC
     
-    printf("RTC Time | Sys Timer | Humidity | Temperature | Light | DAC_Vout\n");
+    printf("| RTC Time | Sys Timer | Humidity | Temperature | Light | DAC_Vout | Alarm |\n");
 
     while(true){
         //compute Vout
@@ -52,7 +52,8 @@ int main()
             activate_alarm();
 
         //write out to dac
-	    write_to_dac((int)v_out);
+        int level = (v_out / 3.3) * 512;
+	    write_to_dac(level);
 	
         //Get current times
         get_current_time(HH, MM, SS);
@@ -60,11 +61,12 @@ int main()
         update_blynk_time(HH, MM, SS);
 
         //Write to console
-        printf("%d:%d:%d | %d:%d:%d | ", HH, MM, SS, hh, mm, ss);
-        printf("%.2f V | %.2f C | %d | %.2f V\n", humid, temp, light, v_out);
+        printf("| %d:%d:%d | %d:%d:%d | ", HH, MM, SS, hh, mm, ss);
+        printf("%.2f V | %d C | %d | %.2f V | ", humid, temp, light, v_out);
+        printf("%c |\n", (alarm_on) ? '*' : ' ');
 
         //publish data to blynk
-	    //write_to_blynk(humid, temp, light, alarm_on);
+	    write_to_blynk(humid, temp, light, alarm_on);
 
         //wait specified time
         delay(delay_times[delay_i]);
@@ -82,11 +84,12 @@ int main()
  */
 
 // Write data to DAC
-void write_to_dac(char Vout)
+void write_to_dac(int level)
 {
+    level = level & 0b1111111111;
     char reg[2];
-    reg[0] = 0b01010000 | (Vout>>4);
-    reg[1] = Vout<<4;
+    reg[0] = 0b01010000 | (level>>4);
+    reg[1] = level<<2;
     wiringPiSPIDataRW(DAC_SPI_CHAN, (unsigned char*)reg, 2);
 }
 
@@ -144,10 +147,9 @@ void deactivate_alarm(void)
 void reset_isr(void){
     long interrupt_time = millis();
     if(interrupt_time - last_interrupt_a > DEBOUNCE_TIME){
-        cout << "Reset button pressed" << endl;
         last_alarm = 0;
         system("clear");
-        printf("RTC Time | Sys Timer | Humidity | Temperature | Light | DAC_Vout\n");
+        printf("RTC Time | Sys Timer | Humidity | Temperature | Light | DAC_Vout | Alarm\n");
         start_sys_timer();
     }
     last_interrupt_a = interrupt_time;
@@ -155,7 +157,6 @@ void reset_isr(void){
 void alarm_dismiss_isr(void){
     long interrupt_time = millis();
     if(interrupt_time - last_interrupt_b > DEBOUNCE_TIME){
-        cout << "Alarm dismiss button pressed" << endl;
         deactivate_alarm();
     }
     last_interrupt_b = interrupt_time;
@@ -163,15 +164,16 @@ void alarm_dismiss_isr(void){
 void interval_adjust_isr(void){
     long interrupt_time = millis();
     if(interrupt_time - last_interrupt_c > DEBOUNCE_TIME){
-        cout << "Interval adjust button pressed" << endl;
-        delay_i++;
+        if (delay_i == 2)
+            delay_i = 0;
+        else
+            delay_i++;
     }
     last_interrupt_c = interrupt_time;
 }
 void start_stop_isr(void){
     long interrupt_time = millis();
     if(interrupt_time - last_interrupt_d > DEBOUNCE_TIME){
-        cout << "Start/stop button pressed" << endl;
         reading = !reading;
     }
     last_interrupt_d = interrupt_time;

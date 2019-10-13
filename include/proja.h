@@ -52,7 +52,7 @@ float get_degrees_celsius(int data);
 void *adc_read_thread(void *threadargs);
 void activate_alarm(void);
 void deactivate_alarm(void);
-void write_to_dac(char Vout);
+void write_to_dac(int level);
 void write_to_blynk(void);
 void update_blynk_time(void);
 int main(void);
@@ -70,7 +70,7 @@ long last_alarm = 0;
 
 //Readings
 float humid;
-float temp;
+int temp;
 int light;
 float dac_out;
 bool alarm_on = false;
@@ -81,6 +81,6 @@ bool reading = true;
 
 //RTC
 int HH, MM, SS; //System time
-int hh, mm, ss; //Start time
+int hh, mm, ss; //RTC time
 
 #endif
