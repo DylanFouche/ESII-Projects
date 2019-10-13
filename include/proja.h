@@ -15,6 +15,7 @@
 #include <iostream>
 #include <pthread.h>
 #include <signal.h> // For cleaning up GPIO
+#include <time.h>
 
 //setting up BLYNK
 #define BLYNK_PRINT stdout
@@ -45,6 +46,7 @@ BlynkSocket Blynk(_blynkTransport);
 #define ADC_SPI_CHAN 1
 #define TEMP_CHAN 0
 #define LIGHT_CHAN 1
+#define HUMID_CHAN 2
 #define DAC_CHAN 3
 
 //Alarm variables
@@ -61,6 +63,7 @@ void *adc_read_thread(void *threadargs);
 void activate_alarm(void);
 void deactivate_alarm(void);
 void write_to_dac(char Vout);
+void get_current_time(void);
 int main(void);
 
 //global variables for debouncing
@@ -71,13 +74,17 @@ long last_interrupt_d = 0;
 
 long last_alarm = 0;
 
-//ADC readings
+//Readings
 float humid;
 float temp;
 int light;
 float dac_out;
+bool alarm_on = false;
 
 //Flag used by ADC reading thread
 bool stopped = false;
+
+//RTC
+int HH, MM, SS;
 
 #endif

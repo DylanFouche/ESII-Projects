@@ -37,18 +37,26 @@ int main()
 	pthread_attr_setschedparam (&tattr, &param); /* setting the new scheduling param */
 	pthread_create(&thread_id, &tattr, adc_read_thread, (void *)1); /* with new priority specified */
 	
+	printf("System Time | Humidity | Temperature | Light | DAC_Vout\n");
+
     while(true){
         //TODO:
         //read in from adc
         //do some computation
-        float v_out = (light / (float)1023) * temp;
+        float v_out = (light / (float)1023) * humid;
 
         if (v_out < MIN_THRESH || v_out > MAX_THRESH)
             activate_alarm();
+
         //write out to dac
+	write_to_dac((int)v_out);
+	
+	//Get current times
+	get_current_time();
 
         //Write to console
-        printf("%f C | %d | %f V\n", temp, light, v_out);
+	printf("%d:%d:%d | ", HH, MM, SS);
+        printf("%.2f V | %.2f C | %d | %.2f V\n", humid, temp, light, v_out);
         //publish data to blynk
 
         delay(1000);
@@ -56,9 +64,9 @@ int main()
 
     //Join and exit the reading thread
 	pthread_join(thread_id, NULL);
-    pthread_exit(NULL);
+    	pthread_exit(NULL);
 
-    return 0;
+    	return 0;
 }
 
 /*
@@ -80,10 +88,13 @@ int read_adc_channel(int channel)
     wiringPiSPIDataRW(ADC_SPI_CHAN, (unsigned char*)reg, 3);
     return ((reg[1]&3) << 8) + reg[2];
 }
+float get_volts(int data)
+{
+	return (data * 3.3) / (float)1023;
+}
 float get_degrees_celsius(int data)
 {
-    float v_out = (data * 330) / (float)1023;
-    return v_out - 50;
+    return (data * 330) / (float)1023;
 }
 void *adc_read_thread(void *threadargs)
 {
@@ -91,6 +102,7 @@ void *adc_read_thread(void *threadargs)
 	{
 		temp = get_degrees_celsius(read_adc_channel(TEMP_CHAN));
 		light = read_adc_channel(LIGHT_CHAN);
+		humid = get_volts(read_adc_channel(HUMID_CHAN));
 	}
 
     pthread_exit(NULL);
@@ -138,6 +150,17 @@ void start_stop_isr(void){
         cout << "Start/stop button pressed" << endl;
     }
     last_interrupt_d = interrupt_time;
+}
+void get_current_time(void)
+{
+	time_t rawtime;
+	struct tm * timeinfo;
+	time (&rawtime);
+	timeinfo = localtime(&rawtime);
+
+	HH = timeinfo ->tm_hour;
+	MM = timeinfo ->tm_min;
+	SS = timeinfo ->tm_sec;
 }
 /*
  * Setup functions

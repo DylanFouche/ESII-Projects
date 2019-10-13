@@ -39,4 +39,4 @@ nuke:
 
 #run the driver executable
 run:
-	./$(BINDIR)/$(EXE) $(ARGV)
+	sudo ./$(BINDIR)/$(EXE) $(ARGV)
