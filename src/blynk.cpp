@@ -22,6 +22,8 @@ char system_time[8];
 #define LIGHT V4
 #define ALARM V5
 
+WidgetLED alarm_led(ALARM);
+
 void setup_blynk(void)
 {
     Blynk.begin(AUTH_TOKEN);
@@ -36,7 +38,12 @@ void write_to_blynk(float humid, int temp, int light, bool alarm_on)
         Blynk.virtualWrite(HUMIDITY, humid);
         Blynk.virtualWrite(TEMP, temp);
         Blynk.virtualWrite(LIGHT, light);
-        Blynk.virtualWrite(ALARM, alarm_on);
+	if(alarm_on){
+	    alarm_led.on();
+	}
+ 	else{
+	    alarm_led.off();
+	}
     }
 }
 
