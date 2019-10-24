@@ -11,9 +11,11 @@ mosquito_wrapper::mosquito_wrapper(const char *id, const char *host, int port) :
 
 void mosquito_wrapper::on_connect(int rc)
 {
-	cout << "Connected with code " <<  rc << endl;
-
-	if (rc == 0)
+	if(rc!=0)
+	{
+		cout << "Unable to connect to MQTT broker" << endl;
+	}
+	else
 	{
 		//successful connect, subscribe to topic
 		subscribe(NULL, SUBSCRIBE_TOPIC);
