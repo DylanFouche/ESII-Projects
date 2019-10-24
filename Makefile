@@ -3,7 +3,7 @@
 #FCHDYL001
 
 CC = g++
-FLAGS = -std=c++11 -Wall -lm -lrt -lwiringPi -lpthread -L blynk-library/src -L blynk-library/linux -L blynk-library/src/Blynk -L blynk-library/src/utility
+FLAGS = -std=c++11 -Wall -lm -lrt -lwiringPi -lpthread -lmosquittopp -L blynk-library/src -L blynk-library/linux -L blynk-library/src/Blynk -L blynk-library/src/utility
 INC = -I include -I src -I blynk-library/linux -I blynk-library/src -I blynk-library/src/Blynk -I blynk-library/src/utility
 
 SRCDIR = src
