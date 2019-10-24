@@ -28,6 +28,9 @@ int main()
     //set up Blynk
     setup_blynk();
 
+    //set up mosquitto
+    mqtt = new mosquito_wrapper(MQTT_ID, MQTT_ADDRESS, MQTT_PORT);
+
     //set up pthread for adc
     pthread_attr_t tattr;
     pthread_t thread_id;
@@ -40,7 +43,7 @@ int main()
     pthread_create(&thread_id, &tattr, adc_read_thread, (void *)1); /* with new priority specified */
 
     start_sys_timer(); //start sys timer on RTC
-    
+
     printf("| RTC Time | Sys Timer | Humidity | Temperature | Light | DAC_Vout | Alarm |\n");
 
     while(true){
@@ -53,8 +56,8 @@ int main()
 
         //write out to dac
         int level = (v_out / 3.3) * 512;
-	    write_to_dac(level);
-	
+	write_to_dac(level);
+
         //Get current times
         get_current_time(HH, MM, SS);
         get_sys_time(hh, mm, ss);
@@ -66,7 +69,11 @@ int main()
         printf("%c |\n", (alarm_on) ? '*' : ' ');
 
         //publish data to blynk
-	    write_to_blynk(humid, temp, light, alarm_on);
+	write_to_blynk(humid, temp, light, alarm_on);
+
+	//publish data to mqtt
+	mqtt->write_to_mqtt(humid, temp, light, alarm_on);
+	mqtt->loop();
 
         //wait specified time
         delay(delay_times[delay_i]);

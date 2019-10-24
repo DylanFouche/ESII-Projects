@@ -18,6 +18,7 @@
 
 #include "clock.h"
 #include "blynk.h"
+#include "mosquito.h"
 
 //Define buttons and leds
 #define ALARM_LED 1
@@ -42,6 +43,12 @@
 #define ALARM_INTERVAL 180000
 #define MIN_THRESH 0.65
 #define MAX_THRESH 2.65
+
+//MQTT variables
+#define MQTT_ID "ESII_PROJB"
+#define MQTT_ADDRESS "test.mosquitto.org"
+#define MQTT_PORT 1883
+mosquito_wrapper* mqtt;
 
 //Function definitions
 void setup_gpio(void);
