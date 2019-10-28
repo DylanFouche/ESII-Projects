@@ -1,6 +1,13 @@
 # ESII-Projects
 Mini projects for the Embedded Systems II course.
 
+## Install Mosquitto
+```bash
+$ sudo apt-get install mosquitto
+$ sudo apt-get install mosquitto-clients
+$ sudo apt-get install libmosquitto-dev libmosquittopp-dev
+```
+
 ## Compile
 ```bash
 $ make
@@ -9,6 +16,16 @@ $ make
 ## Run
 ```bash
 $ make run
+```
+
+
+## Notes
+The following mqtt broker was used:
+  test.mosquitto.org ; port 1883.
+ 
+To subscribe to the test broker:
+```bash
+$ mosquitto_sub -h test.mosquitto.org -t "projb/sensors/#" -v
 ```
 
 ## Clean
