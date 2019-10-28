@@ -12,6 +12,7 @@
 #define PUBLISH_TOPIC_HUMID "projb/sensors/humidity"
 #define PUBLISH_TOPIC_TEMP "projb/sensors/temperature"
 #define PUBLISH_TOPIC_LIGHT "projb/sensors/light"
+#define PUBLISH_TOPIC_TIME "projb/sensors/time"
 #define PUBLISH_TOPIC_ALARM "projb/sensors/alarm"
 
 class mosquito_wrapper : public mosqpp::mosquittopp
@@ -24,7 +25,7 @@ public:
 	void on_message(const struct mosquitto_message *message);
 	void on_subcribe(int mid, int qos_count, const int *granted_qos);
 
-	void write_to_mqtt(float humid, int temp, int light, bool alarm_on);
+	void write_to_mqtt(float humid, int temp, int light, bool alarm_on, std::string time);
 };
 
 extern float MAX_THRESH;

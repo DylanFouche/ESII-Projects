@@ -72,7 +72,8 @@ int main()
 	write_to_blynk(humid, temp, light, alarm_on);
 
 	//publish data to mqtt
-	mqtt->write_to_mqtt(humid, temp, light, alarm_on);
+	string time_str = string(to_string(hh)+":"+to_string(mm)+":"+to_string(ss));
+	mqtt->write_to_mqtt(humid, temp, light, alarm_on, time_str);
 	mqtt->loop();
 
         //wait specified time
