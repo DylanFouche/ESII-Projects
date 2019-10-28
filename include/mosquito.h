@@ -3,11 +3,11 @@
 
 #include <iostream>
 #include <cstdlib>
-#include <cstring>
+#include <string>
 
 #include <mosquittopp.h>
 
-#define SUBSCRIBE_TOPIC "projb/alarm"
+#define SUBSCRIBE_TOPIC "projb/sensors/alarmthreshold/#"
 #define PUBLISH_TOPIC "projb/sensors"
 #define PUBLISH_TOPIC_HUMID "projb/sensors/humidity"
 #define PUBLISH_TOPIC_TEMP "projb/sensors/temperature"
@@ -26,5 +26,8 @@ public:
 
 	void write_to_mqtt(float humid, int temp, int light, bool alarm_on);
 };
+
+extern float MAX_THRESH;
+extern float MIN_THRESH;
 
 #endif

@@ -30,6 +30,17 @@ void mosquito_wrapper::on_subcribe(int mid, int qos_count, const int *granted_qo
 void mosquito_wrapper::on_message(const struct mosquitto_message *message)
 {
 	//we've recieved a message from the topic we subscibed to in on_connect()
+	string topic = string(message->topic);
+	float value = atof((char*)message->payload);
+	cout << value << endl;
+	if(topic == "projb/sensors/alarmthreshold/max"){
+		//update max threshold
+		MAX_THRESH = value;
+	}
+	else{
+		//update min threshold
+		MIN_THRESH = value;
+	}
 }
 
 void mosquito_wrapper::write_to_mqtt(float humid, int temp, int light, bool alarm_on)
@@ -37,7 +48,7 @@ void mosquito_wrapper::write_to_mqtt(float humid, int temp, int light, bool alar
 	string humid_str = to_string(humid);
 	string temp_str = to_string(temp);
 	string light_str = to_string(light);
-	string alarm_str = alarm_on ? "YES" : "NO";
+	string alarm_str = alarm_on ? "ON" : "OFF";
 
 	publish(NULL, PUBLISH_TOPIC_HUMID, humid_str.length(), humid_str.c_str());
 	publish(NULL, PUBLISH_TOPIC_TEMP, temp_str.length(), temp_str.c_str());

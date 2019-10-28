@@ -41,8 +41,8 @@
 
 //Alarm variables
 #define ALARM_INTERVAL 180000
-#define MIN_THRESH 0.65
-#define MAX_THRESH 2.65
+float MIN_THRESH = 0.65;
+float MAX_THRESH = 2.65;
 
 //MQTT variables
 #define MQTT_ID "ESII_PROJB"
